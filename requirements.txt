@@ -402,7 +402,7 @@ tblib @ file:///Users/ktietz/demo/mc3/conda-bld/tblib_1629402031467/work
 tenacity @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_e4laqy9gpr/croot/tenacity_1721222508993/work
 tensorboard==2.20.0
 tensorboard-data-server==0.7.2
-tensorflow==2.20.0
+tensorflow-cpu
 termcolor==3.3.0
 terminado @ file:///Users/builder/cbouss/perseverance-python-buildout/croot/terminado_1699283001768/work
 text-unidecode @ file:///Users/ktietz/demo/mc3/conda-bld/text-unidecode_1629401354553/work
