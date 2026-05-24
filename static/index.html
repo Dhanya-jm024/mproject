@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriVision: Glassmorphic Cyber-Biotech Dashboard</title>
+    
+    <!-- Premium Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Vector Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet.js Interactive WebGIS Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Chart.js Graphics Engine -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS Styles -->
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <!-- ==========================================
+         MODERN AUTH PORTAL — LOGIN & REGISTER
+         ========================================== -->
+    <div id="auth-overlay" class="auth-overlay-modern open">
+        <!-- Animated background particles -->
+        <div class="auth-bg-particles">
+            <div class="auth-particle p1"></div>
+            <div class="auth-particle p2"></div>
+            <div class="auth-particle p3"></div>
+            <div class="auth-particle p4"></div>
+            <div class="auth-particle p5"></div>
+        </div>
+
+        <div class="auth-card-modern">
+            <!-- Logo / Brand header -->
+            <div class="auth-brand-header">
+                <div class="auth-logo-icon">
+                    <i class="fa-solid fa-leaf"></i>
+                </div>
+                <h1 class="auth-brand-title">AGRI<span>VISION</span></h1>
+                <p class="auth-brand-subtitle">Intelligent Crop Health Diagnostics Platform</p>
+            </div>
+            
+            <!-- Tab switches -->
+            <div class="auth-tab-bar">
+                <button id="auth-tab-login" class="auth-tab active" data-tab="login">Sign In</button>
+                <button id="auth-tab-register" class="auth-tab" data-tab="register">Create Account</button>
+                <div class="auth-tab-indicator" id="auth-tab-indicator"></div>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form">
+                <div class="auth-field-group">
+                    <label for="login-username">
+                        <i class="fa-solid fa-user"></i> Username
+                    </label>
+                    <input type="text" id="login-username" placeholder="Enter your username" required autocomplete="username" />
+                </div>
+                
+                <div class="auth-field-group">
+                    <label for="login-password">
+                        <i class="fa-solid fa-lock"></i> Password
+                    </label>
+                    <div class="auth-password-wrapper">
+                        <input type="password" id="login-password" placeholder="Enter your password" required autocomplete="current-password" />
+                        <button type="button" class="auth-eye-toggle" data-target="login-password" aria-label="Toggle password visibility">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="auth-options-row">
+                    <label class="auth-checkbox-label">
+                        <input type="checkbox" id="remember-me" />
+                        <span class="auth-checkmark"></span>
+                        Remember me
+                    </label>
+                    <a href="#" class="auth-forgot-link" onclick="return false;">Forgot Password?</a>
+                </div>
+                
+                <button type="submit" class="auth-submit-btn" id="login-submit-btn">
+                    <span class="auth-btn-text">Sign In</span>
+                    <span class="auth-btn-loader" style="display:none;">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i> Authenticating...
+                    </span>
+                </button>
+                
+                <div class="auth-divider">
+                    <span>or continue as</span>
+                </div>
+                
+                <button type="button" id="bypass-guest-btn" class="auth-guest-btn">
+                    <i class="fa-solid fa-user-secret"></i> Guest Mode
+                </button>
+                <p class="auth-guest-note">
+                    Guest mode provides limited features. Scan history won't be saved to your profile.
+                </p>
+            </form>
+            
+            <!-- Register Form (hidden initially) -->
+            <form id="register-form" class="auth-form" style="display: none;">
+                <div class="auth-field-group">
+                    <label for="register-fullname">
+                        <i class="fa-solid fa-id-card"></i> Full Name
+                    </label>
+                    <input type="text" id="register-fullname" placeholder="Enter your full name" autocomplete="name" />
+                </div>
+                
+                <div class="auth-field-group">
+                    <label for="register-email">
+                        <i class="fa-solid fa-envelope"></i> Email Address
+                    </label>
+                    <input type="email" id="register-email" placeholder="you@example.com" required autocomplete="email" />
+                    <span class="auth-field-hint" id="email-hint"></span>
+                </div>
+                
+                <div class="auth-field-group">
+                    <label for="register-username">
+                        <i class="fa-solid fa-at"></i> Username
+                    </label>
+                    <input type="text" id="register-username" placeholder="Choose a username" required autocomplete="username" />
+                    <span class="auth-field-hint" id="username-hint"></span>
+                </div>
+                
+                <div class="auth-field-group">
+                    <label for="register-password">
+                        <i class="fa-solid fa-lock"></i> Password
+                    </label>
+                    <div class="auth-password-wrapper">
+                        <input type="password" id="register-password" placeholder="Min. 6 characters" required minlength="6" autocomplete="new-password" />
+                        <button type="button" class="auth-eye-toggle" data-target="register-password" aria-label="Toggle password visibility">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                    <!-- Password Strength Bar -->
+                    <div class="auth-pw-strength-bar">
+                        <div class="auth-pw-strength-fill" id="pw-strength-fill"></div>
+                    </div>
+                    <span class="auth-field-hint" id="pw-strength-label"></span>
+                </div>
+                
+                <div class="auth-field-group">
+                    <label for="register-confirm-password">
+                        <i class="fa-solid fa-shield-halved"></i> Confirm Password
+                    </label>
+                    <div class="auth-password-wrapper">
+                        <input type="password" id="register-confirm-password" placeholder="Re-enter password" required minlength="6" autocomplete="new-password" />
+                    </div>
+                    <span class="auth-field-hint" id="confirm-pw-hint"></span>
+                </div>
+                
+                <label class="auth-checkbox-label" style="margin-bottom: 16px;">
+                    <input type="checkbox" id="agree-terms" required />
+                    <span class="auth-checkmark"></span>
+                    I agree to the <a href="#" onclick="return false;" class="auth-forgot-link">Terms of Service</a> and <a href="#" onclick="return false;" class="auth-forgot-link">Privacy Policy</a>
+                </label>
+                
+                <button type="submit" class="auth-submit-btn" id="register-submit-btn">
+                    <span class="auth-btn-text">Create Account</span>
+                    <span class="auth-btn-loader" style="display:none;">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i> Creating Account...
+                    </span>
+                </button>
+            </form>
+            
+            <!-- Error / Success Banner -->
+            <div id="auth-error-banner" class="auth-message-banner error" style="display: none;">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="auth-error-msg">Authentication failed.</span>
+            </div>
+            <div id="auth-success-banner" class="auth-message-banner success" style="display: none;">
+                <i class="fa-solid fa-circle-check"></i>
+                <span id="auth-success-msg">Account created successfully!</span>
+            </div>
+            
+            <!-- Footer -->
+            <div class="auth-footer">
+                <span>© 2026 AgriVision · Powered by AI</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="cyber-layout-wrapper">
+        
+        <!-- ==========================================
+             CYBER-BIOTECH HUD NAVIGATION HEADER
+             ========================================== -->
+        <header class="cyber-header-hud">
+            <div class="hud-main-row">
+                <!-- Brand logo with dynamic pulsing effect -->
+                <div class="hud-logo-area">
+                    <i class="fa-solid fa-dna logo-dna-pulse"></i>
+                    <div class="hud-logo-title">
+                        <span class="logo-title">AGRI<span class="accent-cyber">VISION</span></span>
+                        <span class="logo-badge">BIOTECH LAB CORE</span>
+                    </div>
+                </div>
+                
+                <!-- GPS & Real-time System Telemetry -->
+                <div class="hud-system-status hide-md">
+                    <div class="system-time-wrapper">
+                        <i class="fa-solid fa-clock"></i>
+                        <span id="live-time">System Time Loading...</span>
+                    </div>
+                    <div class="system-coords-wrapper">
+                        <i class="fa-solid fa-satellite-dish"></i>
+                        <span>GRID: 36.7783° N | 119.8242° W</span>
+                    </div>
+                </div>
+                
+                <!-- Glassmorphic Central Search Bar -->
+                <div class="cyber-search-bar">
+                    <i class="fa-solid fa-filter search-category-icon"></i>
+                    <select class="search-category-dropdown" id="search-category-select">
+                        <option value="all">All Biotech Systems</option>
+                        <option value="organic">Organic Biologicals</option>
+                        <option value="chemical">Targeted Chemicals</option>
+                        <option value="fungal">Fungal Remedies</option>
+                        <option value="pest">Pest Control</option>
+                    </select>
+                    <input type="text" class="search-input-field" id="header-search-input" placeholder="Search biological remedies (e.g. neem oil, copper, spinosad)..." />
+                    <button class="search-action-btn" id="header-search-submit">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+                
+                <!-- Right Side Interactive Widgets -->
+                <div class="header-nav-right" style="position: relative; display: flex; align-items: center; gap: 14px;">
+                    <!-- Shopping cart capsule widget -->
+                    <div class="cyber-cart-capsule" id="open-cart-btn" style="margin-right: 4px;">
+                        <div class="cart-icon-wrapper">
+                            <span class="cart-item-count" id="cart-badge-count">0</span>
+                            <i class="fa-solid fa-prescription-bottle-medical cart-nav-icon"></i>
+                        </div>
+                        <span class="cart-nav-label">E-Cart</span>
+                    </div>
+
+                    <!-- Hamburger Menu Button -->
+                    <button id="hamburger-menu-btn" class="hamburger-menu-btn-cyber" style="background:rgba(255,255,255,0.05); border:1px solid var(--border-light); outline:none; color:var(--text-main); font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; transition:all 0.3s ease;">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    
+                    <!-- Collapsible Dropdown Menu -->
+                    <div id="hamburger-menu-dropdown" class="hamburger-dropdown-cyber" style="display:none; position:absolute; right:0; top:48px; background:rgba(11, 17, 34, 0.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--border-light); border-radius:10px; padding: 16px; width: 280px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); z-index: 1000; flex-direction: column; gap: 14px;">
+                        <!-- Theme Toggle Item -->
+                        <div class="dropdown-item-cyber" style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:600; color:var(--text-grey);">
+                            <span>UI Mode theme:</span>
+                            <button id="theme-toggle-btn" class="hud-theme-toggle" style="cursor:pointer; display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.05); border:1px solid var(--border-light); outline:none; transition:all 0.3s ease; padding:0;">
+                                <i class="fa-solid fa-moon" id="theme-icon" style="color:var(--cyber-neon-blue); font-size:14px;"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Currency Selector Item -->
+                        <div class="dropdown-item-cyber" style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:600; color:var(--text-grey);">
+                            <span>Catalog Currency:</span>
+                            <div class="hud-currency-capsule" style="display:flex; align-items:center; background:rgba(255,255,255,0.05); border:1px solid var(--border-light); border-radius:20px; padding: 4px 10px; gap: 6px;">
+                                <i class="fa-solid fa-coins" style="color:var(--cyber-neon-blue); font-size:12px;"></i>
+                                <select id="currency-select" style="background:transparent; border:none; outline:none; color:var(--text-main); font-family:inherit; font-size:11.5px; font-weight:700; cursor:pointer;">
+                                    <option value="USD">USD ($)</option>
+                                    <option value="INR">INR (₹)</option>
+                                    <option value="EUR">EUR (€)</option>
+                                    <option value="GBP">GBP (£)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- User Identity Status -->
+                        <div class="dropdown-item-cyber" style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:600; color:var(--text-grey);">
+                            <span>Account status:</span>
+                            <div class="hud-user-badge" id="hud-user-badge" style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); border:1px solid var(--border-light); border-radius:15px; padding: 6px 12px; font-family:var(--font-heading); font-size:11.5px; font-weight:600; color:var(--text-main);">
+                                <i class="fa-solid fa-user-astronaut" style="color:var(--cyber-neon-green);"></i>
+                                <span id="user-display-name">Guest Mode</span>
+                            </div>
+                        </div>
+
+                        <!-- Secure Key Light -->
+                        <div class="dropdown-item-cyber" style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:600; color:var(--text-grey);">
+                            <span>Gemini AI Key:</span>
+                            <div class="hud-key-light" id="key-indicator-badge" style="margin:0;">
+                                <i class="fa-solid fa-key"></i>
+                                <span class="status-badge-text">Demo Mode</span>
+                            </div>
+                        </div>
+
+                        <!-- Logout Action Button -->
+                        <div class="dropdown-item-cyber" style="border-top: 1px solid var(--border-light); padding-top: 10px; display:flex; justify-content:center;">
+                            <button id="auth-logout-btn" class="cyber-secondary-btn" style="display:none; padding:8px 20px; font-size:11px; border-radius:15px; width: 100%; cursor:pointer; justify-content:center;"><i class="fa-solid fa-right-from-bracket"></i> Logout Profile</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dynamic Navigation Tab Strip -->
+            <div class="hud-tabs-row">
+                <div class="hud-tabs-left">
+                    <button class="sub-tab-btn active" data-tab="tab-diagnose"><i class="fa-solid fa-microscope"></i> Leaf Diagnostics</button>
+                    <button class="sub-tab-btn" data-tab="tab-marketplace"><i class="fa-solid fa-flask"></i> Remedies Marketplace</button>
+                    <button class="sub-tab-btn" data-tab="tab-history"><i class="fa-solid fa-database"></i> Scan Database Logs</button>
+                    <button class="sub-tab-btn" data-tab="tab-chatbot"><i class="fa-solid fa-user-doctor"></i> AI Agronomist Chat</button>
+                    <button class="sub-tab-btn" data-tab="tab-webgis"><i class="fa-solid fa-earth-americas"></i> Outbreak GIS Map</button>
+                    <button class="sub-tab-btn" data-tab="tab-analytics"><i class="fa-solid fa-chart-line"></i> Classifier Sandbox</button>
+                    <button class="sub-tab-btn" data-tab="tab-literature"><i class="fa-solid fa-book-open"></i> Science Library</button>
+                </div>
+                
+                <div class="hud-tabs-right">
+                    <span class="security-text-glow"><i class="fa-solid fa-shield-halved"></i> Bio-Secure Grid Active</span>
+                </div>
+            </div>
+        </header>
+        
+        <!-- ==========================================
+             MAIN VIEWPORT WORKSPACE
+             ========================================== -->
+        <div class="main-viewport-container">
+            
+            <!-- Left Sidebar Controls Panel -->
+            <aside class="cyber-sidebar-panel">
+                <div class="sidebar-block">
+                    <h3>Diagnostics Core</h3>
+                    <div class="status-box-cyber">
+                        <div class="status-dot online"></div>
+                        <span>✨ NEURAL CORE ACTIVE</span>
+                    </div>
+                    <p class="sidebar-desc-text">Edge MobileNetV2 Transfer Model (97%+ Validation Ready)</p>
+                </div>
+                
+                <div class="sidebar-separator"></div>
+                
+                <div class="sidebar-block">
+                    <h3>AI Agronomist Gateway</h3>
+                    <p class="sidebar-desc-text">Apply your secure Gemini API key to unlock context-aware conversations.</p>
+                    <div class="cyber-input-wrapper" id="key-input-container">
+                        <i class="fa-solid fa-lock" id="key-lock-icon"></i>
+                        <input type="password" id="gemini-key" placeholder="Enter Gemini Key..." />
+                    </div>
+                    <button id="save-key-btn" class="cyber-primary-btn w-100 mt-xs"><i class="fa-solid fa-key"></i> Apply Key Credentials</button>
+                    <span id="key-feedback" class="feedback-msg"></span>
+                </div>
+                
+                <div class="sidebar-separator"></div>
+                
+                <div class="sidebar-block">
+                    <h3>Biotech Farm Benefits</h3>
+                    <ul class="biotech-benefits-list">
+                        <li><i class="fa-solid fa-truck-fast"></i> Instant Remedy Despatch</li>
+                        <li><i class="fa-solid fa-shield-virus"></i> Certified Yield Protection</li>
+                        <li><i class="fa-solid fa-clock"></i> 24/7 Agro-Bioscience Help</li>
+                    </ul>
+                </div>
+                
+                <div class="sidebar-separator"></div>
+                
+                <div class="sidebar-footer-text">
+                    <p>Engineered by DeepMind Suite</p>
+                    <p>AgriVision Platform v3.0 MVP</p>
+                </div>
+            </aside>
+            
+            <!-- Right-side Widescreen Workspaces -->
+            <main class="viewport-main-panel">
+                
+                <!-- TAB 1: DIAGNOSTIC LAB -->
+                <section id="tab-diagnose" class="tab-pane active">
+                    <div class="cyber-pane-header">
+                        <h2>🔍 Real-Time Crop & Pest Diagnostics</h2>
+                        <p>Feed crop foliage or pest imagery into neural models or initiate live camera capture to analyze pathologies and download blueprints.</p>
+                    </div>
+                    
+                    <div class="cyber-grid-2-col">
+                        <!-- Capture & Upload Panel -->
+                        <div class="cyber-glass-card flex-col">
+                            <h3 class="card-heading-cyber"><i class="fa-solid fa-camera-retro"></i> Foliage & Pest Capture Terminal</h3>
+                            
+                            <div class="input-source-toggle-cyber">
+                                <label class="toggle-option-cyber active" id="toggle-upload">
+                                    <input type="radio" name="source" value="upload" checked style="display:none;">
+                                    <i class="fa-solid fa-file-arrow-up"></i> Upload Crop / Pest Photo
+                                </label>
+                                <label class="toggle-option-cyber" id="toggle-camera">
+                                    <input type="radio" name="source" value="camera" style="display:none;">
+                                    <i class="fa-solid fa-video"></i> Active Lens
+                                </label>
+                            </div>
+                            
+                            <!-- Glowing Advanced AI Mode Toggle Switch -->
+                            <div class="cyber-ai-mode-wrapper mt-sm mb-xs">
+                                <div class="cyber-switch-container">
+                                    <label class="cyber-switch">
+                                        <input type="checkbox" id="ai-mode-toggle">
+                                        <span class="cyber-slider"></span>
+                                    </label>
+                                    <span class="cyber-switch-label"><i class="fa-solid fa-rocket"></i> Advanced AI Mode (Gemini 2.5)</span>
+                                </div>
+                                <p class="cyber-switch-subtext">Diagnose general pests and normal garden images using multi-modal AI</p>
+                            </div>
+                            
+                            <!-- Upload Drag Zone with Pulsing Scanner -->
+                            <div id="upload-zone" class="drag-zone-cyber">
+                                <div class="scanner-beam-line"></div>
+                                <i class="fa-solid fa-cloud-arrow-up zone-icon-cyber"></i>
+                                <p class="zone-text-cyber">Drag & drop foliage or pest photo here or click to browse</p>
+                                <p class="zone-hint-cyber">Supports JPEG, JPG, PNG formats</p>
+                                <input type="file" id="file-input" accept="image/*" style="display:none;" />
+                            </div>
+                            
+                            <!-- Live Camera Capture -->
+                            <div id="camera-zone" class="camera-zone-cyber" style="display:none; position: relative;">
+                                <div class="scanner-beam-line"></div>
+                                <video id="video-stream" autoplay playsinline class="video-preview-cyber"></video>
+                                <button id="snap-btn" class="cyber-primary-btn mt-sm"><i class="fa-solid fa-circle-notch fa-spin"></i> Capture Diagnostics Snapshot</button>
+                            </div>
+                            
+                            <!-- File Loaded Preview -->
+                            <div id="preview-container" class="preview-container-cyber" style="display:none; position: relative;">
+                                <div class="scanner-beam-line"></div>
+                                <h4>Selected Crop / Pest Preview:</h4>
+                                <img id="image-preview" src="" alt="Selected preview" class="preview-img-cyber">
+                                <button id="clear-image-btn" class="cyber-secondary-btn mt-xs"><i class="fa-solid fa-trash-can"></i> Reset Diagnostics Scan</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Diagnosis Command HUD -->
+                        <div class="cyber-glass-card flex-col">
+                            <h3 class="card-heading-cyber"><i class="fa-solid fa-microscope"></i> Classification HUD</h3>
+                            
+                            <div id="hud-loading" class="spinner-container-cyber" style="display:none;">
+                                <div class="loading-spinner-cyber"></div>
+                                <p>Running photo through active deep neural networks...</p>
+                            </div>
+                            
+                            <div id="hud-placeholder" class="info-message-cyber">
+                                <i class="fa-solid fa-chart-bar"></i>
+                                <p>Waiting for crop leaf or pest image input to initialize classifier inference...</p>
+                            </div>
+                            
+                            <div id="hud-results" style="display:none;">
+                                <!-- Diagnosed Image Thumbnail Preview -->
+                                <div class="hud-scanned-preview-container-cyber" id="hud-scanned-preview-box" style="display:none; text-align: center; margin-bottom: 15px;">
+                                    <img id="hud-scanned-preview-img" src="" alt="Diagnosed scan" class="hud-scanned-img-cyber">
+                                </div>
+                                
+                                <!-- OOD Out-of-Domain Alert banner -->
+                                <div id="ood-alert" class="alert-box-cyber" style="display:none; flex-direction: column; gap: 8px;">
+                                    <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                        <i class="fa-solid fa-triangle-exclamation" style="margin-top: 4px;"></i>
+                                        <div>
+                                            <strong>Anomaly Detected: Low Prediction Confidence (<span id="ood-conf-val">0.00</span>%)</strong>
+                                            <p>The neural net classified unfamiliar crop structures or pests. Please ensure you photograph a crop leaf or pest in focus and well-lit.</p>
+                                        </div>
+                                    </div>
+                                    <button id="ood-gemini-retry-btn" class="cyber-primary-btn mt-xs" style="font-size: 11px; padding: 6px 12px; align-self: flex-start;">
+                                        <i class="fa-solid fa-rocket"></i> Run Advanced AI Diagnostics (Gemini)
+                                    </button>
+                                </div>
+                                
+                                <div class="results-header-cyber">
+                                    <span class="results-subheading-cyber">CLASSIFIED CROP PATHOLOGY</span>
+                                    <h2 id="result-label" class="result-highlight-text-cyber">Healthy</h2>
+                                </div>
+                                
+                                <!-- Confidence level bar -->
+                                <div class="metric-progress-wrapper-cyber">
+                                    <div class="metric-progress-header-cyber">
+                                        <span>AI Classification Confidence:</span>
+                                        <strong id="result-confidence">0.0%</strong>
+                                    </div>
+                                    <div class="progress-bar-container-cyber">
+                                        <div id="confidence-bar" class="progress-bar-fill-cyber" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Severity index badge -->
+                                <div class="severity-wrapper-cyber">
+                                    <span>Infection Severity Index:</span>
+                                    <span id="severity-badge" class="badge-cyber">Medium</span>
+                                </div>
+                                
+                                <!-- Document exporters -->
+                                <div class="exporter-actions-cyber">
+                                    <button id="btn-export-pdf" class="cyber-primary-btn"><i class="fa-solid fa-file-pdf"></i> Download PDF Blueprint</button>
+                                    <button id="btn-export-md" class="cyber-secondary-btn"><i class="fa-solid fa-file-code"></i> Save Markdown Log</button>
+                                </div>
+                                
+                                <!-- E-commerce Quick Buy Prescription button -->
+                                <button id="btn-quick-buy" class="cyber-buy-now-btn mt-sm" style="display:none; width: 100%; margin-top: 12px;">
+                                    <i class="fa-solid fa-up-right-from-square"></i> Buy Prescribed Remedies (Lowest Price: $<span id="quick-buy-price">0.00</span>)
+                                </button>
+                                
+                                <p class="exporter-caption-cyber">Prescriptions contain tailored bio-controls, biological spray ratios, and safety protocols.</p>
+                                
+                                <div class="results-divider-cyber"></div>
+                                
+                                <!-- Symptoms & Guidelines details -->
+                                <div class="remedy-details-cyber">
+                                    <h4 class="detail-header-cyber"><i class="fa-solid fa-circle-question"></i> Symptomatology Description</h4>
+                                    <p id="result-symptoms" class="detail-text-cyber">Pathological symptoms loading...</p>
+                                    
+                                    <h4 class="detail-header-cyber"><i class="fa-solid fa-shield-halved"></i> Precautionary & Preventive Measures</h4>
+                                    <ul id="result-precautions" class="detail-list-cyber">
+                                        <!-- Dynamic items -->
+                                    </ul>
+                                    
+                                    <h4 class="detail-header-cyber"><i class="fa-solid fa-prescription-bottle-medical"></i> Targeted Remedies Guidelines</h4>
+                                    <div class="cyber-grid-2-col gap-sm">
+                                        <div class="treatment-box-cyber box-organic-cyber">
+                                            <h5>🌿 Bio-Control (Organic)</h5>
+                                            <p id="result-organic">Organic details...</p>
+                                        </div>
+                                        <div class="treatment-box-cyber box-chemical-cyber">
+                                            <h5>🧪 Chemical Remediation</h5>
+                                            <p id="result-chemical">Chemical details...</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <h4 class="detail-header-cyber mt-md" style="margin-top: 16px;"><i class="fa-solid fa-cart-shopping"></i> Purchase Remedies Online (Lowest Price Guaranteed)</h4>
+                                    <div id="hud-recommended-products" class="cyber-grid-2-col gap-sm" style="margin-top: 8px;">
+                                        <!-- Dynamically populated by app.js -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- TAB 2: REMEDIES MARKETPLACE -->
+                <section id="tab-marketplace" class="tab-pane">
+                    <div class="cyber-pane-header">
+                        <h2>🧪 AgriVision Bio-Remedies Marketplace</h2>
+                        <p>Order certified bio-agents, biological pest controllers, and targeted laboratory chemicals at lowest price direct to farm.</p>
+                    </div>
+                    
+                    <!-- Marketplace Category Filters -->
+                    <div class="store-filter-bar-cyber">
+                        <button class="filter-btn-cyber active" data-filter="all">All Remedies</button>
+                        <button class="filter-btn-cyber" data-filter="organic">Organic Bio-Agents</button>
+                        <button class="filter-btn-cyber" data-filter="chemical">Targeted Biotech</button>
+                        <button class="filter-btn-cyber" data-filter="fungal">Fungal Controls</button>
+                        <button class="filter-btn-cyber" data-filter="pest">Pest Reducers</button>
+                    </div>
+                    
+                    <!-- Bio Remedies Capsules Grid -->
+                    <div class="products-grid-cyber" id="products-catalog-grid">
+                        <!-- Populated dynamically by app.js -->
+                    </div>
+                </section>
+                
+                <!-- TAB 3: SCAN DATABASE LOGS -->
+                <section id="tab-history" class="tab-pane">
+                    <div class="cyber-pane-header">
+                        <h2>📁 SQLite Diagnostic Core History Database</h2>
+                        <p>Examine active crop logs in the local relational database, toggle cures, and audit diagnostic classifications.</p>
+                    </div>
+                    
+                    <!-- Metrics Dashboard Grid -->
+                    <div class="cyber-grid-3-col metrics-summary-bar-cyber">
+                        <div class="cyber-glass-card metric-card-cyber">
+                            <i class="fa-solid fa-table-list card-icon-cyber icon-blue"></i>
+                            <div class="metric-info-cyber">
+                                <span class="metric-val-cyber" id="total-scans-metric">0</span>
+                                <span class="metric-label-cyber">Total Logged Scans</span>
+                            </div>
+                        </div>
+                        <div class="cyber-glass-card metric-card-cyber">
+                            <i class="fa-solid fa-heart-circle-check card-icon-cyber icon-green"></i>
+                            <div class="metric-info-cyber">
+                                <span class="metric-val-cyber" id="recovered-scans-metric">0</span>
+                                <span class="metric-label-cyber">Cured Foliage Fields</span>
+                            </div>
+                        </div>
+                        <div class="cyber-glass-card metric-card-cyber">
+                            <i class="fa-solid fa-circle-exclamation card-icon-cyber icon-red"></i>
+                            <div class="metric-info-cyber">
+                                <span class="metric-val-cyber" id="active-scans-metric">0</span>
+                                <span class="metric-label-cyber">Active Outbreaks</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- History Logging Table -->
+                    <div class="cyber-glass-card flex-col mt-md">
+                        <h3 class="card-heading-cyber"><i class="fa-solid fa-database"></i> Scan Diagnostic Logs</h3>
+                        <div class="table-container-cyber">
+                            <table class="history-table-cyber">
+                                <thead>
+                                    <tr>
+                                        <th>Image</th>
+                                        <th>Date & Time</th>
+                                        <th>Diagnosed Pathology</th>
+                                        <th>Confidence Index</th>
+                                        <th>Severity Level</th>
+                                        <th>Ecosystem Status</th>
+                                        <th>Actions Control</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-table-body">
+                                    <tr>
+                                        <td colspan="7" class="table-loading-msg-cyber">Querying relational database indexes...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- TAB 4: AI AGRONOMIST CHAT -->
+                <section id="tab-chatbot" class="tab-pane">
+                    <div class="cyber-pane-header">
+                        <h2>💬 AI Agronomist Consultations</h2>
+                        <p>Engage in real-time conversations regarding diagnosed infections, biological inputs, or spray schedules.</p>
+                    </div>
+                    
+                    <div class="cyber-glass-card flex-col chat-ecosystem-cyber">
+                        <!-- Dynamic active leaf scan context indicator -->
+                        <div class="chat-context-bar-cyber">
+                            <div class="context-light-cyber"></div>
+                            <span id="chat-context-status">No active crop context loaded. Diagnostic scans populate this automatically.</span>
+                        </div>
+                        
+                        <!-- Chat history bubble area -->
+                        <div id="chat-dialog-area" class="chat-dialog-area-cyber">
+                            <div class="chat-bubble-cyber assistant-bubble-cyber">
+                                <i class="fa-solid fa-user-doctor bubble-avatar-cyber"></i>
+                                <div class="bubble-content-cyber">
+                                    <p>Welcome to your AgriVision AI Agronomist core! Ask any questions regarding crop symptoms, biological active ingredients, or preventative treatment schedules. Running a foliage scan will automatically synchronize the context here for custom advisory.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Input send zone -->
+                        <div class="chat-input-bar-cyber">
+                            <input type="text" id="chat-user-input" placeholder="Inquire crop health advice here..." />
+                            <button id="chat-send-btn" class="cyber-primary-btn"><i class="fa-solid fa-paper-plane"></i> Send Query</button>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- TAB 5: WEBGIS OUTBREAK FORECASTING -->
+                <section id="tab-webgis" class="tab-pane">
+                    <div class="cyber-pane-header">
+                        <h2>🗺️ Regional GIS Disease Monitoring & Outbreak Forecasting</h2>
+                        <p>Analyze localized outbreaks mapped on WebGIS tiles to forecast infection indexes using relative humidity metrics.</p>
+                    </div>
+                    
+                    <div class="grid-map-chart-cyber">
+                        <!-- Outbreak Map -->
+                        <div class="cyber-glass-card flex-col map-container-card-cyber">
+                            <h3 class="card-heading-cyber"><i class="fa-solid fa-map-location-dot"></i> Geographical Infection Hotspots</h3>
+                            <div id="webgis-map" class="webgis-map-cyber"></div>
+                            <p class="map-caption-cyber">Coordinates mark crop field parameters with validated pathological infections.</p>
+                        </div>
+                        
+                        <!-- 12-Month Outbreak Curves -->
+                        <div class="cyber-glass-card flex-col chart-container-card-cyber">
+                            <h3 class="card-heading-cyber"><i class="fa-solid fa-chart-area"></i> 12-Month Outbreak Index Forecast</h3>
+                            <p class="chart-desc-cyber">Calculated based on canopy wetness index and weather patterns:</p>
+                            <div class="canvas-wrapper-cyber">
+                                <canvas id="forecasting-chart"></canvas>
+                            </div>
+                            <p class="chart-caption-cyber">Spores maximize during high humidity (May-June), while pest vectors thrive in dry mid-summers.</p>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- TAB 6: PERFORMANCE SANDBOX -->
+                <section id="tab-analytics" class="tab-pane">
+                    <div class="cyber-pane-header">
+                        <h2>📈 Model Calibration & Hyperparameter Validation Sandbox</h2>
+                        <p>Audit loss curves, model parameters, and metrics of our Transfer Learning classification core.</p>
+                    </div>
+                    
+                    <div class="cyber-grid-2-col">
+                        <!-- Model Parameter Matrix -->
+                        <div class="cyber-glass-card flex-col">
+                            <h3 class="card-heading-cyber"><i class="fa-solid fa-sliders"></i> Core Classifier Parameters</h3>
+                            <div class="table-container-cyber">
+                                <table class="metrics-table-cyber">
+                                    <thead>
+                                        <tr>
+                                            <th>Classification Parameter</th>
+                                            <th>Metric Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>CNN Base Architecture</td><td>MobileNetV2 Fine-Tuned (ImageNet)</td></tr>
+                                        <tr><td>Ecosystem Dataset Size</td><td>2,627 Leaf Images</td></tr>
+                                        <tr><td>Training Set (80%)</td><td>2,102 Images</td></tr>
+                                        <tr><td>Validation Set (20%)</td><td>525 Images</td></tr>
+                                        <tr><td>Target Validation Accuracy</td><td class="metric-highlight-cyber">94.48% (97%+ optimized hyperparameter layers)</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="cyber-grid-2-col gap-sm mt-md">
+                                <div class="mini-score-card-cyber">
+                                    <span class="score-title-cyber">Top-1 Accuracy</span>
+                                    <span class="score-val-cyber">94.48%</span>
+                                </div>
+                                <div class="mini-score-card-cyber">
+                                    <span class="score-title-cyber">Categorical Loss</span>
+                                    <span class="score-val-cyber">0.164</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Training loss curve chart -->
+                        <div class="cyber-glass-card flex-col">
+                            <h3 class="card-heading-cyber"><i class="fa-solid fa-chart-line"></i> Deep learning Convergence Curve</h3>
+                            <div class="canvas-wrapper-cyber">
+                                <canvas id="convergence-chart"></canvas>
+                            </div>
+                            <p class="chart-caption-cyber">Training progress evaluated over 15 iterations on MobileNetV2 parameters.</p>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- TAB 7: SCIENCE REFERENCE LIBRARY -->
+                <section id="tab-literature" class="tab-pane">
+                    <div class="cyber-pane-header">
+                        <h2>📚 Crop Pathology Literature Reference Index</h2>
+                        <p>The AgriVision diagnostic engine is validated on academic and technical research papers in this library.</p>
+                    </div>
+                    
+                    <div class="cyber-glass-card flex-col">
+                        <h3 class="card-heading-cyber"><i class="fa-solid fa-graduation-cap"></i> Scientific Architecture Bibliography</h3>
+                        <div class="accordion-container-cyber" id="papers-accordion">
+                            <!-- Populated dynamically by app.js -->
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- ==========================================
+                     CYBERNETIC COMMAND FOOTER
+                     ========================================== -->
+                <footer class="cyber-footer" style="margin-top: 40px;">
+                    <div class="back-to-top" id="scroll-to-top">Back to top</div>
+                    <div class="footer-links-row">
+                        <div class="footer-col">
+                            <h4>Core Operations</h4>
+                            <ul>
+                                <li><a href="#">Ecosystem Diagnostics</a></li>
+                                <li><a href="#">Deep Learning Core</a></li>
+                                <li><a href="#">WebGIS Node</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-col">
+                            <h4>Secure Transactions</h4>
+                            <ul>
+                                <li><a href="#">Biotech Products</a></li>
+                                <li><a href="#">Certified Partners</a></li>
+                                <li><a href="#">Outbreak Insurance</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-col">
+                            <h4>Support Portal</h4>
+                            <ul>
+                                <li><a href="#">Bioscience Lab Advisors</a></li>
+                                <li><a href="#">Outbreak History Logs</a></li>
+                                <li><a href="#">Ecosystem Telemetry Help</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="footer-logo-row">
+                        <div class="logo-leaf-footer"><i class="fa-solid fa-dna"></i> AGRI<span class="accent-cyber">VISION</span> BIOTECH</div>
+                        <p class="copyright">© 2026, AgriVision Biotech Core Ecosystem. All rights reserved. Secure agricultural edge nodes.</p>
+                    </div>
+                </footer>
+            </main>
+        </div>
+        
+        <!-- ==========================================
+             GLASSMORPHIC CART DRAWER PANEL
+             ========================================== -->
+        <div class="cart-sidebar-cyber" id="cart-sidebar">
+            <div class="cart-sidebar-header-cyber">
+                <h3><i class="fa-solid fa-basket-shopping"></i> Shopping Cart</h3>
+                <button id="close-cart-btn" class="close-cart-btn-cyber">&times;</button>
+            </div>
+            
+            <div class="cart-sidebar-items-cyber" id="cart-sidebar-items">
+                <!-- Dynamic cart list items -->
+                <div class="cart-empty-message-cyber">
+                    <i class="fa-solid fa-shopping-cart"></i>
+                    <p>Your shopping cart is empty.</p>
+                </div>
+            </div>
+            
+            <div class="cart-sidebar-footer-cyber">
+                <div class="cart-summary-row-cyber">
+                    <span>Ecosystem Subtotal:</span>
+                    <span id="cart-subtotal">$0.00</span>
+                </div>
+                <div class="cart-summary-row-cyber">
+                    <span>Est. Tax (8.25%):</span>
+                    <span id="cart-tax">$0.00</span>
+                </div>
+                <div class="cart-summary-divider-cyber"></div>
+                <div class="cart-summary-row-cyber cart-total-row-cyber">
+                    <span>Secure Order Total:</span>
+                    <span id="cart-total">$0.00</span>
+                </div>
+                
+                <button id="checkout-btn" class="cyber-buy-now-btn mt-md" style="width:100%; font-size: 14px; padding: 12px 18px;" disabled>
+                    <i class="fa-solid fa-credit-card"></i> Propose Secure Checkout
+                </button>
+            </div>
+        </div>
+        
+        <!-- ==========================================
+             CHECKOUT PAYMENT GATE OVERLAY
+             ========================================== -->
+        <div class="modal-overlay-cyber" id="checkout-modal">
+            <div class="modal-card-cyber">
+                <div class="modal-header-cyber">
+                    <h3><i class="fa-solid fa-shield-halved text-green"></i> Secure Payment Gateway</h3>
+                    <button id="close-checkout-modal" class="modal-close-btn-cyber">&times;</button>
+                </div>
+                
+                <form id="payment-form" class="payment-form-cyber">
+                    <div class="form-row-cyber">
+                        <label>Authorized Cardholder Name</label>
+                        <input type="text" placeholder="John Doe" required />
+                    </div>
+                    <div class="form-row-cyber">
+                        <label>Secure Credit Card Number</label>
+                        <div class="input-with-icon-cyber">
+                            <i class="fa-solid fa-credit-card"></i>
+                            <input type="text" placeholder="4111 2222 3333 4444" pattern="\d{16}" maxlength="16" required style="padding-left: 36px;" />
+                        </div>
+                    </div>
+                    <div class="form-grid-cyber">
+                        <div class="form-row-cyber">
+                            <label>Expiration Date</label>
+                            <input type="text" placeholder="MM/YY" maxlength="5" required />
+                        </div>
+                        <div class="form-row-cyber">
+                            <label>CVV Core</label>
+                            <input type="password" placeholder="***" maxlength="3" required />
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="cyber-buy-now-btn mt-md" style="width: 100%; font-size: 14px; font-weight: 700; padding: 12px;">
+                        <i class="fa-solid fa-lock"></i> Authorize Transaction (<span id="checkout-pay-total">$0.00</span>)
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- ==========================================
+             SIMULATED SECURE PAYMENT SUCCESS MODAL
+             ========================================== -->
+        <div class="modal-overlay-cyber" id="success-modal">
+            <div class="modal-card-cyber text-center success-card-cyber">
+                <div class="success-icon-wrapper-cyber">
+                    <i class="fa-solid fa-circle-check success-check-icon-cyber"></i>
+                </div>
+                <h2>Biotech Transaction Approved!</h2>
+                <p>Your payment was authorized securely. AgriVision biocontrol agents, chemical cures, and prescription action guidelines have been registered and dispatched for delivery!</p>
+                <button id="close-success-modal" class="cyber-primary-btn mt-md">Resume Lab Core</button>
+            </div>
+        </div>
+        <!-- ==========================================
+             HIGH-FIDELITY GLASSMORPHIC LIGHTBOX MODAL
+             ========================================== -->
+        <div id="lightbox-modal" class="lightbox-modal-cyber" style="display: none;">
+            <span class="lightbox-close-cyber" id="lightbox-close-btn">&times;</span>
+            <div class="lightbox-content-cyber">
+                <img id="lightbox-image" src="" alt="Enlarged Diagnostics View" class="lightbox-img-cyber">
+                <div id="lightbox-caption" class="lightbox-caption-cyber"></div>
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- Custom JS Scripts -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
