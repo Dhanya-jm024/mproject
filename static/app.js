@@ -1339,7 +1339,8 @@ function appendChatBubble(sender, text) {
 function initWebGISMap() {
     if (state.leafletMap) return;
     
-    state.leafletMap = L.map('webgis-map').setView([36.7783, -119.8242], 10);
+    // Centered globally with zoom 2
+    state.leafletMap = L.map('webgis-map').setView([20, 0], 2);
     
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -1347,22 +1348,41 @@ function initWebGISMap() {
         maxZoom: 20
     }).addTo(state.leafletMap);
     
+    // Global agricultural outbreak hotspots database
     const hotspotData = [
-        { loc: [36.7783, -119.8242], type: "Tomato Leaf Curl Outbreak", severity: "High", size: "200 farms affected" },
-        { loc: [36.8123, -119.8920], type: "Late Blight Hotspot", severity: "High", size: "150 farms affected" },
-        { loc: [36.7212, -119.7123], type: "Spider Mites Infestation", severity: "Medium", size: "80 farms affected" },
-        { loc: [36.8504, -119.9801], type: "Bacterial Spot Outbreak", severity: "Medium", size: "90 farms affected" },
-        { loc: [36.7901, -119.7543], type: "Early Blight Hotspot", severity: "Low", size: "40 farms affected" }
+        // India (Asia)
+        { loc: [12.9716, 77.5946], type: "Tomato Leaf Curl Virus (India-G Strain)", severity: "High", size: "8,500 hectares affected" },
+        { loc: [18.5204, 73.8567], type: "Bacterial Spot Outbreak (Xanthomonas)", severity: "Medium", size: "3,200 hectares affected" },
+        
+        // Europe & Mediterranean
+        { loc: [37.3891, -5.9845], type: "Tomato Late Blight Spore Outbreak (Spain)", severity: "High", size: "1,200 commercial farms affected" },
+        { loc: [41.9028, 12.4964], type: "Olive Decline Syndrome (Xylella Fastidiosa - Italy)", severity: "High", size: "4,500 groves quarantined" },
+        
+        // Africa
+        { loc: [-1.2921, 36.8219], type: "Fall Armyworm Maize Outbreak (Kenya)", severity: "High", size: "12,000 hectares impacted" },
+        { loc: [-33.9249, 18.4241], type: "Powdery Mildew Vine Infection (Cape Town)", severity: "Low", size: "450 vineyards affected" },
+        
+        // South America
+        { loc: [-23.5505, -46.6333], type: "Citrus Greening Vector (Sao Paulo, Brazil)", severity: "High", size: "15,000 commercial groves affected" },
+        { loc: [4.7110, -74.0721], type: "Coffee Leaf Rust Outbreak (Hemileia - Colombia)", severity: "Medium", size: "6,800 coffee plantations" },
+        
+        // North America
+        { loc: [36.7783, -119.8242], type: "Tomato Leaf Curl Outbreak (California, USA)", severity: "High", size: "2,500 acres affected" },
+        { loc: [27.6648, -81.5158], type: "Spider Mite Vector Infestation (Florida, USA)", severity: "Medium", size: "1,800 orange groves affected" },
+        
+        // Australia
+        { loc: [-27.4698, 153.0251], type: "Tomato Yellow Leaf Curl Virus (Queensland)", severity: "Medium", size: "750 farms affected" }
     ];
     
     hotspotData.forEach(item => {
         const color = item.severity === 'High' ? 'var(--color-red)' : item.severity === 'Medium' ? 'var(--color-yellow)' : 'var(--color-green)';
         
+        // Setting a larger radius of 150km for high-visibility worldwide scale
         const circle = L.circle(item.loc, {
             color: color,
             fillColor: color,
             fillOpacity: 0.25,
-            radius: 850
+            radius: 150000
         }).addTo(state.leafletMap);
         
         circle.bindPopup(`
