@@ -1246,7 +1246,7 @@ async function fetchHistory() {
             // Build visual image thumbnail or fallback layout
             let imageHtml = '';
             if (row.filename && row.filename.startsWith('scan_')) {
-                imageHtml = `<img src="/static/uploads/${row.filename}" class="history-thumbnail-cyber" alt="Scan thumbnail" data-label="${row.class_label.replace(/_/g, ' ')}" data-time="${row.timestamp}">`;
+                imageHtml = `<img src="${BACKEND_URL}/static/uploads/${row.filename}" class="history-thumbnail-cyber" alt="Scan thumbnail" data-label="${row.class_label.replace(/_/g, ' ')}" data-time="${row.timestamp}">`;
             } else {
                 imageHtml = `<div class="history-thumbnail-placeholder-cyber"><i class="fa-solid fa-leaf"></i></div>`;
             }

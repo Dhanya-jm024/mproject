@@ -448,6 +448,14 @@ def serve_static(path):
     """Serve static directory CSS/JS/Image files."""
     return send_from_directory('static', path)
 
+@app.route('/<path:path>')
+def serve_root_file(path):
+    """Serve static assets requested from root (e.g. styles.css, app.js)."""
+    if os.path.exists(os.path.join('static', path)):
+        return send_from_directory('static', path)
+    return send_from_directory('static', 'index.html')
+
+
 @app.route('/api/predict', methods=['POST'])
 def api_predict():
     """Endpoint for crop leaf or general pest diagnostic scan predictions."""
