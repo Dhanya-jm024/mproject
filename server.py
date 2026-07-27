@@ -9,6 +9,12 @@ from PIL import Image
 from flask import Flask, request, jsonify, send_file, send_from_directory
 from fpdf import FPDF
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 # Dynamic Library Imports with Self-Healing Auto-Installation
 try:
     import tensorflow as tf
@@ -26,7 +32,16 @@ except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "google-generativeai"])
     import google.generativeai as genai
 
+try:
+    from flask_cors import CORS
+except ImportError:
+    import subprocess
+    import sys
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "flask-cors"])
+    from flask_cors import CORS
+
 app = Flask(__name__, static_folder='static')
+CORS(app)
 
 # -----------------------------------------------------------------------------
 # DATABASE OPERATIONS (SQLite Integration)
@@ -65,6 +80,12 @@ def init_db():
     # Self-healing: Add full_name column to users safely
     try:
         cursor.execute("ALTER TABLE users ADD COLUMN full_name TEXT DEFAULT ''")
+    except sqlite3.OperationalError:
+        pass
+
+    # Self-healing: Add gemini_api_key column to users safely
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN gemini_api_key TEXT DEFAULT ''")
     except sqlite3.OperationalError:
         pass
     
@@ -469,12 +490,59 @@ def api_predict():
         with open(save_path, 'wb') as f:
             f.write(img_bytes)
 
+        # Resolve Gemini API Key to use (for validation or scan)
+        api_key_to_use = api_key
+        if not api_key_to_use and user_id:
+            try:
+                conn = sqlite3.connect(DB_PATH)
+                cursor = conn.cursor()
+                cursor.execute("SELECT gemini_api_key FROM users WHERE id = ?", (user_id,))
+                db_row = cursor.fetchone()
+                if db_row:
+                    api_key_to_use = db_row[0]
+                conn.close()
+            except Exception as e:
+                print(f"Error reading user API key from DB: {e}")
+
+        if not api_key_to_use:
+            api_key_to_use = os.environ.get("GEMINI_API_KEY", "AIzaSyAGJ4PvPoZgS2FNEHXl25WhnMvHvy-_KSM")
+
         # Open image for processing
         pil_img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
-        
+
+        # Dynamic validation check: verify if the image contains valid agricultural inputs
+        is_valid_agro = True
+        if api_key_to_use:
+            try:
+                genai.configure(api_key=api_key_to_use)
+                val_model = genai.GenerativeModel("gemini-2.5-flash")
+                val_prompt = (
+                    "Determine if the subject of this image is related to leaves, crops, plants, soil, insects, or plant pests. "
+                    "Respond with exactly one word: YES if it is related, or NO if it is unrelated (e.g. human face, car, room, text, or non-plant objects)."
+                )
+                val_response = val_model.generate_content([pil_img, val_prompt])
+                val_text = val_response.text.strip().upper()
+                if "NO" in val_text and "YES" not in val_text:
+                    is_valid_agro = False
+            except Exception as val_err:
+                print(f"Validation check error (bypassed): {val_err}")
+
+        if not is_valid_agro:
+            # Log as None in scan database
+            log_scan("None", 0.0, "None", unique_filename, user_id)
+            return jsonify({
+                "class_label": "None",
+                "confidence": 0.0,
+                "severity": "None",
+                "symptoms": "None (No valid agricultural or plant subject detected in the uploaded image)",
+                "precautions": ["Please upload a valid agricultural image of a plant, leaf, crop, or pest."],
+                "organic": "None",
+                "chemical": "None",
+                "filename": unique_filename
+            })
+
         if mode == 'gemini':
             # Run Advanced Multi-Modal AI Scan via Gemini
-            api_key_to_use = api_key if api_key else os.environ.get("GEMINI_API_KEY", "")
             if not api_key_to_use:
                 return jsonify({"error": "🔑 Please supply a Gemini API Key in the left sidebar configuration to run an Advanced AI Scan."}), 400
                 
@@ -656,7 +724,8 @@ def api_auth_register():
                 "id": user_id,
                 "username": username,
                 "email": email,
-                "full_name": full_name
+                "full_name": full_name,
+                "gemini_api_key": ""
             }
         })
     except Exception as e:
@@ -680,18 +749,18 @@ def api_auth_login():
         cursor = conn.cursor()
         
         # Try hashed password first
-        cursor.execute("SELECT id, username, email, full_name FROM users WHERE username = ? AND password = ?", (username, hashed_pw))
+        cursor.execute("SELECT id, username, email, full_name, gemini_api_key FROM users WHERE username = ? AND password = ?", (username, hashed_pw))
         row = cursor.fetchone()
         
         if not row:
             # Fallback: try plaintext password (auto-migrate legacy accounts)
-            cursor.execute("SELECT id, username, email, full_name, password FROM users WHERE username = ?", (username,))
+            cursor.execute("SELECT id, username, email, full_name, password, gemini_api_key FROM users WHERE username = ?", (username,))
             legacy_row = cursor.fetchone()
             if legacy_row and legacy_row[4] == password:
                 # Migrate plaintext password to hash
                 cursor.execute("UPDATE users SET password = ? WHERE id = ?", (hashed_pw, legacy_row[0]))
                 conn.commit()
-                row = legacy_row[:4]
+                row = (legacy_row[0], legacy_row[1], legacy_row[2], legacy_row[3], legacy_row[5])
         
         conn.close()
         
@@ -702,13 +771,39 @@ def api_auth_login():
                     "id": row[0],
                     "username": row[1],
                     "email": row[2],
-                    "full_name": row[3] or row[1]
+                    "full_name": row[3] or row[1],
+                    "gemini_api_key": row[4] or ""
                 }
             })
         else:
             return jsonify({"error": "Invalid username or password."}), 401
     except Exception as e:
         return jsonify({"error": f"Failed checking user database: {str(e)}"}), 500
+
+@app.route('/api/user/save-key', methods=['POST'])
+def api_user_save_key():
+    """Save user's Gemini API key to SQLite database."""
+    data = request.json
+    if not data or 'user_id' not in data or 'gemini_api_key' not in data:
+        return jsonify({"error": "Missing user_id or gemini_api_key."}), 400
+        
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET gemini_api_key = ? WHERE id = ?", (data['gemini_api_key'], int(data['user_id'])))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": f"Failed saving API key: {str(e)}"}), 500
+
+@app.route('/api/config', methods=['GET'])
+def api_config():
+    """Retrieve public configuration status (e.g. if Gemini API key is configured)."""
+    has_key = bool(os.environ.get("GEMINI_API_KEY", "AIzaSyAGJ4PvPoZgS2FNEHXl25WhnMvHvy-_KSM"))
+    return jsonify({
+        "has_backend_key": has_key
+    })
 
 @app.route('/api/chat', methods=['POST'])
 def api_chat():
@@ -721,9 +816,29 @@ def api_chat():
     active_diag = data.get('active_diagnosis', '')
     active_conf = data.get('active_confidence', 0.0)
     api_key = data.get('api_key', '')
+    user_id = data.get('user_id')
+    if user_id and user_id != 'null':
+        user_id = int(user_id)
+    else:
+        user_id = None
     
     # Configure Gemini API Key
-    api_key_to_use = api_key if api_key else os.environ.get("GEMINI_API_KEY", "")
+    api_key_to_use = api_key
+    if not api_key_to_use and user_id:
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+            cursor.execute("SELECT gemini_api_key FROM users WHERE id = ?", (user_id,))
+            db_row = cursor.fetchone()
+            if db_row:
+                api_key_to_use = db_row[0]
+            conn.close()
+        except Exception as e:
+            print(f"Error reading user API key in chat: {e}")
+
+    if not api_key_to_use:
+        api_key_to_use = os.environ.get("GEMINI_API_KEY", "AIzaSyAGJ4PvPoZgS2FNEHXl25WhnMvHvy-_KSM")
+        
     if not api_key_to_use:
         return jsonify({"reply": "🔑 Chatbot is in offline demo mode. Please supply a Gemini API Key in the left sidebar configuration to start a live analysis."})
         

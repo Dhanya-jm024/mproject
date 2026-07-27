@@ -1,6 +1,10 @@
 // =============================================================================
 // 1. GLOBAL STATE & APPLICATION INITIALIZATION
 // =============================================================================
+const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? ''
+    : 'https://mproject-backend.onrender.com'; // Replace with your Render URL once deployed
+
 let currentUser = JSON.parse(localStorage.getItem('agrivision_user')) || null;
 let currencyState = {
     current: 'USD',
@@ -16,7 +20,7 @@ const CURRENCY_RATES = {
 
 const state = {
     activeTab: 'tab-diagnose',
-    geminiKey: localStorage.getItem('gemini_api_key') || '',
+    geminiKey: localStorage.getItem('gemini_api_key') || 'AIzaSyAGJ4PvPoZgS2FNEHXl25WhnMvHvy-_KSM',
     activeDiagnosis: null,
     activeConfidence: null,
     selectedFile: null,
@@ -26,6 +30,7 @@ const state = {
     forecastingChart: null,
     convergenceChart: null,
     lastPrescriptionData: null,
+    hasBackendKey: false,
     
     // E-Commerce Cart State
     cart: JSON.parse(localStorage.getItem('agrivision_cart')) || []
@@ -264,19 +269,19 @@ function initClock() {
 // =============================================================================
 // 2. SIDEBAR KEY BINDING & PERSISTENCE
 // =============================================================================
-function initKeySetup() {
+// SIDEBAR KEY BINDING & PERSISTENCE
+// =============================================================================
+function syncKeyUI() {
     const keyInput = document.getElementById('gemini-key');
-    const saveBtn = document.getElementById('save-key-btn');
-    const feedback = document.getElementById('key-feedback');
     const container = document.getElementById('key-input-container');
     const lockIcon = document.getElementById('key-lock-icon');
     const badge = document.getElementById('key-indicator-badge');
     
-    const updateHeaderBadge = (active) => {
+    const updateHeaderBadge = (active, label = "Key Active") => {
         if (badge) {
             if (active) {
                 badge.classList.add('active');
-                badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span class="status-badge-text">Key Active</span>`;
+                badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span class="status-badge-text">${label}</span>`;
             } else {
                 badge.classList.remove('active');
                 badge.innerHTML = `<i class="fa-solid fa-key"></i> <span class="status-badge-text">Demo Mode</span>`;
@@ -284,82 +289,145 @@ function initKeySetup() {
         }
     };
 
+    if (keyInput) {
+        if (state.geminiKey) {
+            keyInput.value = state.geminiKey;
+            keyInput.placeholder = "Enter Gemini Key...";
+        } else if (state.hasBackendKey) {
+            keyInput.value = "";
+            keyInput.placeholder = "Server Key Active";
+        } else {
+            keyInput.value = "";
+            keyInput.placeholder = "Enter Gemini Key...";
+        }
+    }
+    
     if (state.geminiKey) {
-        keyInput.value = state.geminiKey;
         if (container) container.classList.add('key-active');
         if (lockIcon) {
             lockIcon.className = "fa-solid fa-unlock-keyhole";
+            lockIcon.style.color = "var(--cyber-neon-green)";
         }
-        updateHeaderBadge(true);
+        updateHeaderBadge(true, "Key Active");
+    } else if (state.hasBackendKey) {
+        if (container) container.classList.add('key-active');
+        if (lockIcon) {
+            lockIcon.className = "fa-solid fa-unlock-keyhole";
+            lockIcon.style.color = "var(--cyber-neon-green)";
+        }
+        updateHeaderBadge(true, "Server Active");
+    } else {
+        if (container) {
+            container.classList.remove('key-active');
+            container.classList.remove('key-verifying');
+        }
+        if (lockIcon) {
+            lockIcon.className = "fa-solid fa-lock";
+            lockIcon.style.color = "var(--text-grey)";
+        }
+        updateHeaderBadge(false);
+    }
+}
+
+function initKeySetup() {
+    const keyInput = document.getElementById('gemini-key');
+    const saveBtn = document.getElementById('save-key-btn');
+    const feedback = document.getElementById('key-feedback');
+    const container = document.getElementById('key-input-container');
+    const lockIcon = document.getElementById('key-lock-icon');
+    
+    syncKeyUI();
+    if (state.geminiKey && feedback) {
         feedback.innerText = "🔑 Key credentials loaded.";
         feedback.style.color = "var(--cyber-neon-green)";
     }
     
-    saveBtn.addEventListener('click', () => {
-        const val = keyInput.value.trim();
-        
-        // Start verification animation
-        saveBtn.disabled = true;
-        saveBtn.className = "cyber-primary-btn w-100 mt-xs key-applying";
-        saveBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Verifying Credentials...`;
-        
-        if (container) {
-            container.classList.remove('key-active');
-            container.classList.add('key-verifying');
-        }
-        if (lockIcon) {
-            lockIcon.className = "fa-solid fa-key fa-spin";
-            lockIcon.style.color = "var(--cyber-neon-blue)";
-        }
-        
-        setTimeout(() => {
-            // End simulated cryptographic check
-            saveBtn.disabled = false;
-            saveBtn.className = "cyber-primary-btn w-100 mt-xs";
+    // Asynchronously check if backend has predefined key
+    fetch(BACKEND_URL + '/api/config')
+        .then(res => res.json())
+        .then(data => {
+            if (data.has_backend_key) {
+                state.hasBackendKey = true;
+                syncKeyUI();
+                if (!state.geminiKey && feedback) {
+                    feedback.innerText = "🔑 Server API key active behind the scenes.";
+                    feedback.style.color = "var(--cyber-neon-green)";
+                }
+            }
+        })
+        .catch(err => console.error("Error checking backend API key config:", err));
+    
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            const val = keyInput.value.trim();
+            
+            // Start verification animation
+            saveBtn.disabled = true;
+            saveBtn.className = "cyber-primary-btn w-100 mt-xs key-applying";
+            saveBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Verifying Credentials...`;
             
             if (container) {
-                container.classList.remove('key-verifying');
+                container.classList.remove('key-active');
+                container.classList.add('key-verifying');
             }
-            
-            state.geminiKey = val;
-            localStorage.setItem('gemini_api_key', val);
-            
-            if (val) {
-                if (container) container.classList.add('key-active');
-                if (lockIcon) {
-                    lockIcon.className = "fa-solid fa-unlock-keyhole";
-                    lockIcon.style.color = "var(--cyber-neon-green)";
-                }
-                saveBtn.classList.add('key-authorized');
-                saveBtn.innerHTML = `<i class="fa-solid fa-unlock-keyhole"></i> Key Authorized!`;
-                updateHeaderBadge(true);
-                
-                feedback.innerText = "✨ Biotech Credentials Authorized!";
-                feedback.style.color = "var(--cyber-neon-green)";
-                
-                setTimeout(() => {
-                    saveBtn.classList.remove('key-authorized');
-                    saveBtn.innerHTML = `<i class="fa-solid fa-key"></i> Apply Key Credentials`;
-                }, 2000);
-            } else {
-                if (container) container.classList.remove('key-active');
-                if (lockIcon) {
-                    lockIcon.className = "fa-solid fa-lock";
-                    lockIcon.style.color = "var(--text-grey)";
-                }
-                saveBtn.innerHTML = `<i class="fa-solid fa-key"></i> Apply Key Credentials`;
-                updateHeaderBadge(false);
-                
-                feedback.innerText = "⚠️ Key removed. Portal active in Demo Mode.";
-                feedback.style.color = "var(--cyber-neon-amber)";
+            if (lockIcon) {
+                lockIcon.className = "fa-solid fa-key fa-spin";
+                lockIcon.style.color = "var(--cyber-neon-blue)";
             }
             
             setTimeout(() => {
-                feedback.innerText = "";
-            }, 4000);
-            
-        }, 1000);
-    });
+                // End simulated cryptographic check
+                saveBtn.disabled = false;
+                saveBtn.className = "cyber-primary-btn w-100 mt-xs";
+                
+                if (container) {
+                    container.classList.remove('key-verifying');
+                }
+                
+                state.geminiKey = val;
+                localStorage.setItem('gemini_api_key', val);
+                
+                // Persist key to database behind the scenes if logged in
+                if (currentUser) {
+                    currentUser.gemini_api_key = val;
+                    localStorage.setItem('agrivision_user', JSON.stringify(currentUser));
+                    fetch(BACKEND_URL + '/api/user/save-key', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user_id: currentUser.id,
+                            gemini_api_key: val
+                        })
+                    }).catch(err => console.error("Failed persisting key to DB:", err));
+                }
+                
+                syncKeyUI();
+                
+                if (val) {
+                    saveBtn.classList.add('key-authorized');
+                    saveBtn.innerHTML = `<i class="fa-solid fa-unlock-keyhole"></i> Key Authorized!`;
+                    
+                    feedback.innerText = "✨ Biotech Credentials Authorized!";
+                    feedback.style.color = "var(--cyber-neon-green)";
+                    
+                    setTimeout(() => {
+                        saveBtn.classList.remove('key-authorized');
+                        saveBtn.innerHTML = `<i class="fa-solid fa-key"></i> Apply Key Credentials`;
+                    }, 2000);
+                } else {
+                    saveBtn.innerHTML = `<i class="fa-solid fa-key"></i> Apply Key Credentials`;
+                    
+                    feedback.innerText = "⚠️ Key removed. Portal active in Demo Mode.";
+                    feedback.style.color = "var(--cyber-neon-amber)";
+                }
+                
+                setTimeout(() => {
+                    feedback.innerText = "";
+                }, 4000);
+                
+            }, 1000);
+        });
+    }
 }
 
 // =============================================================================
@@ -628,7 +696,7 @@ async function executeInference(file) {
     }
     
     try {
-        const response = await fetch('/api/predict', {
+        const response = await fetch(BACKEND_URL + '/api/predict', {
             method: 'POST',
             body: formData
         });
@@ -711,7 +779,7 @@ function setupExportButtons(data) {
         pdfBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating PDF...';
         
         try {
-            const res = await fetch('/api/export-pdf', {
+            const res = await fetch(BACKEND_URL + '/api/export-pdf', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1141,10 +1209,11 @@ async function fetchHistory() {
     
     try {
         const userIdParam = currentUser ? currentUser.id : 'null';
-        const response = await fetch(`/api/history?user_id=${userIdParam}`);
+        const response = await fetch(BACKEND_URL + `/api/history?user_id=${userIdParam}`);
         if (!response.ok) throw new Error("Failed fetching records.");
         
         state.historyData = await response.json();
+        updateDashboardMetrics(state.historyData);
         
         const total = state.historyData.length;
         const recovered = state.historyData.filter(r => r.status === 'Recovered' || r.class_label === 'Healthy').length;
@@ -1203,12 +1272,72 @@ async function fetchHistory() {
     }
 }
 
+function updateDashboardMetrics(data) {
+    const scanCountEl = document.getElementById('dashboard-scan-count');
+    const outbreakCountEl = document.getElementById('dashboard-outbreak-count');
+    const feedEl = document.getElementById('dashboard-recent-feed');
+    
+    if (scanCountEl) {
+        scanCountEl.innerText = data.length;
+    }
+    
+    if (outbreakCountEl) {
+        const outbreaks = data.filter(item => item.class_label && item.class_label !== 'Healthy').length;
+        outbreakCountEl.innerText = outbreaks;
+    }
+    
+    if (feedEl) {
+        feedEl.innerHTML = '';
+        if (!data || data.length === 0) {
+            feedEl.innerHTML = `
+                <div class="feed-empty-state-cyber">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span>No diagnostic records logged yet.</span>
+                </div>
+            `;
+            return;
+        }
+        
+        // Take up to 3 recent items
+        const recent = data.slice(0, 3);
+        recent.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'hud-feed-item-cyber';
+            
+            // Format time
+            let dateStr = item.timestamp || 'Just Now';
+            try {
+                const dateObj = new Date(item.timestamp);
+                if (!isNaN(dateObj)) {
+                    dateStr = dateObj.toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) + ' ' + dateObj.toLocaleTimeString(undefined, {hour: '2-digit', minute:'2-digit'});
+                }
+            } catch (e) {}
+            
+            const isHealthy = item.class_label === 'Healthy';
+            const statusClass = isHealthy ? 'ok' : 'alert';
+            const icon = isHealthy ? 'fa-circle-check' : 'fa-circle-exclamation';
+            
+            div.innerHTML = `
+                <div class="hud-feed-info-cyber">
+                    <span class="hud-feed-title-cyber">${item.class_label.replace(/_/g, ' ')}</span>
+                    <span class="hud-feed-time-cyber">${dateStr}</span>
+                </div>
+                <div class="hud-feed-badge-cyber ${statusClass}">
+                    <i class="fa-solid ${icon}"></i>
+                    <span>${isHealthy ? 'Healthy' : (item.severity || 'Outbreak')}</span>
+                </div>
+            `;
+            feedEl.appendChild(div);
+        });
+    }
+}
+
 function bindHistoryActions() {
     document.querySelectorAll('.btn-cure').forEach(btn => {
         btn.addEventListener('click', async () => {
             const rid = btn.getAttribute('data-id');
             try {
-                const res = await fetch('/api/history/update', {
+                const res = await fetch(BACKEND_URL + '/api/history/update', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id: rid, status: 'Recovered' })
@@ -1224,7 +1353,7 @@ function bindHistoryActions() {
             if (!confirm("Are you sure you want to permanently delete this scan log?")) return;
             
             try {
-                const res = await fetch('/api/history/delete', {
+                const res = await fetch(BACKEND_URL + '/api/history/delete', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id: rid })
@@ -1252,14 +1381,15 @@ function initChatSystem() {
         const loadingBubble = appendChatBubble('assistant-loading', '');
         
         try {
-            const response = await fetch('/api/chat', {
+            const response = await fetch(BACKEND_URL + '/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: text,
                     active_diagnosis: state.activeDiagnosis,
                     active_confidence: state.activeConfidence,
-                    api_key: state.geminiKey
+                    api_key: state.geminiKey,
+                    user_id: currentUser ? currentUser.id : null
                 })
             });
             
@@ -1393,10 +1523,43 @@ function initWebGISMap() {
     });
 }
 
+function getThemeChartColors() {
+    const isLight = document.body.classList.contains('theme-light');
+    return {
+        textMain: isLight ? '#0f172a' : '#e2f4ea',
+        textGrey: isLight ? '#475569' : '#a3c9b8',
+        gridColor: isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(46, 204, 113, 0.15)'
+    };
+}
+
+function updateChartThemeColors() {
+    const colors = getThemeChartColors();
+
+    if (state.forecastingChart) {
+        state.forecastingChart.options.plugins.legend.labels.color = colors.textMain;
+        state.forecastingChart.options.scales.x.grid.color = colors.gridColor;
+        state.forecastingChart.options.scales.x.ticks.color = colors.textGrey;
+        state.forecastingChart.options.scales.y.grid.color = colors.gridColor;
+        state.forecastingChart.options.scales.y.ticks.color = colors.textGrey;
+        state.forecastingChart.update();
+    }
+    if (state.convergenceChart) {
+        state.convergenceChart.options.plugins.legend.labels.color = colors.textMain;
+        state.convergenceChart.options.scales.x.grid.color = colors.gridColor;
+        state.convergenceChart.options.scales.x.ticks.color = colors.textGrey;
+        state.convergenceChart.options.scales.x.title.color = colors.textGrey;
+        state.convergenceChart.options.scales.y.grid.color = colors.gridColor;
+        state.convergenceChart.options.scales.y.ticks.color = colors.textGrey;
+        state.convergenceChart.options.scales.y.title.color = colors.textGrey;
+        state.convergenceChart.update();
+    }
+}
+
 function initForecastingChart() {
     if (state.forecastingChart) return;
     
     const ctx = document.getElementById('forecasting-chart').getContext('2d');
+    const colors = getThemeChartColors();
     
     state.forecastingChart = new Chart(ctx, {
         type: 'line',
@@ -1428,17 +1591,17 @@ function initForecastingChart() {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    labels: { color: 'var(--text-charcoal)', font: { family: 'Inter', weight: '600' } }
+                    labels: { color: colors.textMain, font: { family: 'Outfit', weight: '600' } }
                 }
             },
             scales: {
                 x: {
-                    grid: { color: 'rgba(0, 0, 0, 0.04)' },
-                    ticks: { color: 'var(--text-grey)' }
+                    grid: { color: colors.gridColor },
+                    ticks: { color: colors.textGrey }
                 },
                 y: {
-                    grid: { color: 'rgba(0, 0, 0, 0.04)' },
-                    ticks: { color: 'var(--text-grey)' },
+                    grid: { color: colors.gridColor },
+                    ticks: { color: colors.textGrey },
                     suggestedMax: 100
                 }
             }
@@ -1450,6 +1613,7 @@ function initConvergenceChart() {
     if (state.convergenceChart) return;
     
     const ctx = document.getElementById('convergence-chart').getContext('2d');
+    const colors = getThemeChartColors();
     
     state.convergenceChart = new Chart(ctx, {
         type: 'line',
@@ -1479,19 +1643,19 @@ function initConvergenceChart() {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    labels: { color: 'var(--text-charcoal)', font: { family: 'Inter', weight: '600' } }
+                    labels: { color: colors.textMain, font: { family: 'Outfit', weight: '600' } }
                 }
             },
             scales: {
                 x: {
-                    title: { display: true, text: 'Training Epochs', color: 'var(--text-grey)', font: { weight: '600' } },
-                    grid: { color: 'rgba(0, 0, 0, 0.04)' },
-                    ticks: { color: 'var(--text-grey)' }
+                    title: { display: true, text: 'Training Epochs', color: colors.textGrey, font: { weight: '600' } },
+                    grid: { color: colors.gridColor },
+                    ticks: { color: colors.textGrey }
                 },
                 y: {
-                    title: { display: true, text: 'Accuracy Rate (%)', color: 'var(--text-grey)', font: { weight: '600' } },
-                    grid: { color: 'rgba(0, 0, 0, 0.04)' },
-                    ticks: { color: 'var(--text-grey)' }
+                    title: { display: true, text: 'Accuracy Rate (%)', color: colors.textGrey, font: { weight: '600' } },
+                    grid: { color: colors.gridColor },
+                    ticks: { color: colors.textGrey }
                 }
             }
         }
@@ -1585,6 +1749,7 @@ function initThemeToggle() {
                     icon.style.transform = "rotate(0deg)";
                 }
             }
+            updateChartThemeColors();
         });
     }
 }
@@ -1704,6 +1869,13 @@ function initAuthSystem() {
             }
             if (logoutBtn) logoutBtn.style.display = 'inline-flex';
             if (authOverlay) authOverlay.classList.remove('open');
+            
+            // Automatically sync Gemini API Key from database profile
+            if (user.gemini_api_key) {
+                state.geminiKey = user.gemini_api_key;
+                localStorage.setItem('gemini_api_key', user.gemini_api_key);
+                syncKeyUI();
+            }
         } else {
             currentUser = null;
             localStorage.removeItem('agrivision_user');
@@ -1712,6 +1884,10 @@ function initAuthSystem() {
             }
             if (logoutBtn) logoutBtn.style.display = 'none';
             if (authOverlay) authOverlay.classList.add('open');
+            
+            // Restore whatever is in localStorage or reset
+            state.geminiKey = localStorage.getItem('gemini_api_key') || '';
+            syncKeyUI();
         }
     };
     
@@ -1846,7 +2022,7 @@ function initAuthSystem() {
             setLoading(submitBtn, true);
             
             try {
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch(BACKEND_URL + '/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
@@ -1907,7 +2083,7 @@ function initAuthSystem() {
             setLoading(submitBtn, true);
             
             try {
-                const response = await fetch('/api/auth/register', {
+                const response = await fetch(BACKEND_URL + '/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, username, password, full_name: fullName })

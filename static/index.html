@@ -330,19 +330,7 @@
                     <p class="sidebar-desc-text">Edge MobileNetV2 Transfer Model (97%+ Validation Ready)</p>
                 </div>
                 
-                <div class="sidebar-separator"></div>
-                
-                <div class="sidebar-block">
-                    <h3>AI Agronomist Gateway</h3>
-                    <p class="sidebar-desc-text">Apply your secure Gemini API key to unlock context-aware conversations.</p>
-                    <div class="cyber-input-wrapper" id="key-input-container">
-                        <i class="fa-solid fa-lock" id="key-lock-icon"></i>
-                        <input type="password" id="gemini-key" placeholder="Enter Gemini Key..." />
-                    </div>
-                    <button id="save-key-btn" class="cyber-primary-btn w-100 mt-xs"><i class="fa-solid fa-key"></i> Apply Key Credentials</button>
-                    <span id="key-feedback" class="feedback-msg"></span>
-                </div>
-                
+
                 <div class="sidebar-separator"></div>
                 
                 <div class="sidebar-block">
@@ -434,9 +422,48 @@
                                 <p>Running photo through active deep neural networks...</p>
                             </div>
                             
-                            <div id="hud-placeholder" class="info-message-cyber">
-                                <i class="fa-solid fa-chart-bar"></i>
-                                <p>Waiting for crop leaf or pest image input to initialize classifier inference...</p>
+                            <div id="hud-placeholder" class="hud-dashboard-view-cyber">
+                                <!-- Metrics Row -->
+                                <div class="hud-dashboard-stats-grid">
+                                    <div class="hud-stat-card-cyber">
+                                        <div class="hud-stat-icon-wrapper-cyber"><i class="fa-solid fa-database"></i></div>
+                                        <div class="hud-stat-details-cyber">
+                                            <span class="hud-stat-label-cyber">Total Scans</span>
+                                            <strong class="hud-stat-val-cyber" id="dashboard-scan-count">0</strong>
+                                        </div>
+                                    </div>
+                                    <div class="hud-stat-card-cyber">
+                                        <div class="hud-stat-icon-wrapper-cyber alert"><i class="fa-solid fa-shield-halved"></i></div>
+                                        <div class="hud-stat-details-cyber">
+                                            <span class="hud-stat-label-cyber">Outbreaks</span>
+                                            <strong class="hud-stat-val-cyber" id="dashboard-outbreak-count">0</strong>
+                                        </div>
+                                    </div>
+                                    <div class="hud-stat-card-cyber">
+                                        <div class="hud-stat-icon-wrapper-cyber ok"><i class="fa-solid fa-temperature-half"></i></div>
+                                        <div class="hud-stat-details-cyber">
+                                            <span class="hud-stat-label-cyber">Crop Temp</span>
+                                            <strong class="hud-stat-val-cyber">27.4 °C</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Middle Section: Recent Diagnostics Log Feed -->
+                                <div class="hud-dashboard-feed-box">
+                                    <h4 class="hud-dashboard-subheading-cyber"><i class="fa-solid fa-clock-rotate-left"></i> Recent Scan Outbreaks Feed</h4>
+                                    <div id="dashboard-recent-feed" class="hud-dashboard-feed-list">
+                                        <div class="feed-empty-state-cyber">
+                                            <i class="fa-solid fa-folder-open"></i>
+                                            <span>No diagnostic records logged yet.</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Footer Indicator -->
+                                <div class="hud-dashboard-footer mt-sm">
+                                    <i class="fa-solid fa-fingerprint fa-bounce"></i>
+                                    <span>Waiting for crop leaf/pest upload or webcam snapshot...</span>
+                                </div>
                             </div>
                             
                             <div id="hud-results" style="display:none;">

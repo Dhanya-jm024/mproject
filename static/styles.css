@@ -3,26 +3,26 @@
    ============================================================================= */
 
 :root {
-    /* Color Palette */
-    --bg-dark: #070a13;
-    --bg-deep-slate: #0b1122;
-    --bg-light: rgba(13, 22, 38, 0.45);
-    --border-light: rgba(255, 255, 255, 0.08);
-    --text-main: #f1f5f9;
-    --text-grey: #94a3b8;
-    --text-dark: #0f172a;
+    /* Premium Dark-Emerald Theme Styling */
+    --bg-dark: #07130d;
+    --bg-deep-slate: #0b1c14;
+    --bg-light: rgba(26, 60, 43, 0.4);
+    --border-light: rgba(46, 204, 113, 0.2);
+    --text-main: #e2f4ea;
+    --text-grey: #a3c9b8;
+    --text-dark: #07130d;
     
-    /* Cyber Neons */
-    --cyber-neon-green: #00f59b;
-    --cyber-neon-blue: #00bcff;
-    --cyber-neon-amber: #f59e0b;
-    --cyber-neon-red: #ef4444;
+    /* Agro Neons */
+    --cyber-neon-green: #2ecc71;
+    --cyber-neon-blue: #00f59b;
+    --cyber-neon-amber: #f1c40f;
+    --cyber-neon-red: #e74c3c;
     
     /* Brand Accent Colors */
-    --color-amazon-orange: #00bcff; /* Mapped to cyber blue */
-    --color-green: #00f59b;
-    --color-yellow: #f59e0b;
-    --color-red: #ef4444;
+    --color-amazon-orange: #00f59b;
+    --color-green: #2ecc71;
+    --color-yellow: #f1c40f;
+    --color-red: #e74c3c;
     
     /* Typography */
     --font-main: 'Inter', system-ui, -apple-system, sans-serif;
@@ -38,7 +38,7 @@
 }
 
 body {
-    background: radial-gradient(circle at 10% 20%, #0d1527 0%, #070a12 100%);
+    background: radial-gradient(circle at 10% 20%, #0d1e15 0%, #07130d 100%);
     font-family: var(--font-main);
     color: var(--text-main);
     overflow: hidden;
@@ -842,6 +842,196 @@ body {
 
 .info-message-cyber p {
     font-size: 13px;
+}
+
+/* Interactive HUD Dashboard View */
+.hud-dashboard-view-cyber {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 10px 0;
+}
+
+.hud-dashboard-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.hud-stat-card-cyber {
+    background: rgba(26, 60, 43, 0.25);
+    border: 1px solid rgba(46, 204, 113, 0.15);
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.hud-stat-card-cyber:hover {
+    transform: translateY(-2px);
+    border-color: var(--cyber-neon-green);
+    background: rgba(26, 60, 43, 0.35);
+}
+
+.hud-stat-icon-wrapper-cyber {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: rgba(0, 245, 155, 0.1);
+    color: var(--cyber-neon-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.hud-stat-icon-wrapper-cyber.alert {
+    background: rgba(231, 76, 60, 0.1);
+    color: var(--cyber-neon-red);
+}
+
+.hud-stat-icon-wrapper-cyber.ok {
+    background: rgba(0, 188, 255, 0.1);
+    color: var(--cyber-neon-blue);
+}
+
+.hud-stat-details-cyber {
+    display: flex;
+    flex-direction: column;
+}
+
+.hud-stat-label-cyber {
+    font-size: 11px;
+    color: var(--text-grey);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.hud-stat-val-cyber {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-main);
+    font-family: var(--font-mono);
+}
+
+.hud-dashboard-feed-box {
+    background: rgba(11, 28, 20, 0.5);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    padding: 12px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 180px;
+}
+
+.hud-dashboard-subheading-cyber {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--cyber-neon-blue);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.hud-dashboard-feed-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.feed-empty-state-cyber {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    color: var(--text-grey);
+    font-size: 12px;
+    gap: 6px;
+    opacity: 0.7;
+}
+
+.feed-empty-state-cyber i {
+    font-size: 20px;
+}
+
+.hud-feed-item-cyber {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 8px 12px;
+    transition: background-color 0.2s ease;
+}
+
+.hud-feed-item-cyber:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.hud-feed-info-cyber {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.hud-feed-title-cyber {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.hud-feed-time-cyber {
+    font-size: 10px;
+    color: var(--text-grey);
+}
+
+.hud-feed-badge-cyber {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+.hud-feed-badge-cyber.ok {
+    background: rgba(46, 204, 113, 0.15);
+    color: var(--cyber-neon-green);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.hud-feed-badge-cyber.alert {
+    background: rgba(231, 76, 60, 0.15);
+    color: var(--cyber-neon-red);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.hud-dashboard-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-grey);
+    text-align: center;
+    padding: 8px 0;
+    border-top: 1px dashed var(--border-light);
+}
+
+.hud-dashboard-footer i {
+    color: var(--cyber-neon-blue);
 }
 
 /* Neural Network Spinner */
@@ -3446,6 +3636,129 @@ body.theme-light .hud-key-light {
 @keyframes lightboxZoomIn {
     from { transform: scale(0.85); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
+}
+
+/* =============================================================================
+   20. RESPONSIVE DESIGN & ACCESSIBILITY FOR DESKTOP & MOBILE
+   ============================================================================= */
+
+/* Hide utility for medium/small screens */
+@media (max-width: 992px) {
+    .hide-md {
+        display: none !important;
+    }
+}
+
+/* Hide scrollbars on tabs row but allow scrolling */
+.hud-tabs-row {
+    scrollbar-width: none;
+}
+.hud-tabs-row::-webkit-scrollbar {
+    display: none;
+}
+.hud-tabs-left {
+    flex-wrap: nowrap;
+}
+
+/* Screen width up to 1024px (Tablets / Laptops) */
+@media (max-width: 1024px) {
+    .main-viewport-container {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+    
+    .cyber-sidebar-panel {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border-light);
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .cyber-sidebar-panel .sidebar-block {
+        flex: 1 1 200px;
+        margin-bottom: 0;
+    }
+
+    .cyber-sidebar-panel .sidebar-separator {
+        display: none;
+    }
+
+    .viewport-main-panel {
+        padding: 16px;
+    }
+}
+
+/* Screen width up to 768px (Mobile Devices) */
+@media (max-width: 768px) {
+    .cyber-search-bar {
+        display: none !important;
+    }
+
+    .cyber-grid-2-col, .cyber-grid-3-col {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .hud-dashboard-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    /* Outbreak map container stack */
+    .grid-map-chart-cyber {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+}
+
+/* Screen width up to 576px (Small Mobile Devices) */
+@media (max-width: 576px) {
+    .hud-main-row {
+        padding: 10px 16px;
+    }
+    
+    .hud-logo-area span.logo-badge {
+        display: none;
+    }
+    
+    .cart-nav-label {
+        display: none;
+    }
+    
+    .cyber-sidebar-panel {
+        flex-direction: column;
+    }
+    
+    .cyber-sidebar-panel .sidebar-block {
+        flex: 1 1 auto;
+    }
+}
+
+/* Light Theme overrides for the Interactive HUD Dashboard components */
+body.theme-light .hud-stat-card-cyber {
+    background: rgba(46, 204, 113, 0.08);
+    border: 1px solid rgba(46, 204, 113, 0.2);
+}
+
+body.theme-light .hud-stat-card-cyber:hover {
+    background: rgba(46, 204, 113, 0.15);
+}
+
+body.theme-light .hud-dashboard-feed-box {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+body.theme-light .hud-feed-item-cyber {
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(15, 23, 42, 0.05);
+}
+
+body.theme-light .hud-feed-item-cyber:hover {
+    background: rgba(0, 0, 0, 0.04);
 }
 
 
